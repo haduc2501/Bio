@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes">
+  <title>Bio · Chỉnh sửa động</title>
+  <!-- Google Font & Font Awesome 6 -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Inter', sans-serif;
+    }
+
+    body {
+      background: linear-gradient(145deg, #f1f5f9 0%, #e6ecf3 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .glass-card {
+      max-width: 780px;
+      width: 100%;
+      background: rgba(255, 255, 255, 0.8);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-radius: 48px 48px 40px 40px;
+      box-shadow: 0 25px 45px -10px rgba(0, 20, 30, 0.15),
+                  inset 0 0 0 1px rgba(255, 255, 255, 0.6);
+      padding: 30px 35px;
+      transition: all 0.25s ease;
+    }
+
+    /* --- Thanh trên cùng: nút bảo mật + dấu tích --- */
+    .top-bar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 20px;
+    }
+
+    .security-btn {
+      background: rgba(255,255,255,0.7);
+      backdrop-filter: blur(4px);
+      border: 1px solid rgba(255,255,255,0.7);
+      padding: 10px 24px;
+      border-radius: 60px;
+      font-size: 1rem;
+      font-weight: 600;
+      color: #0b2a3c;
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.02);
+      cursor: pointer;
+      transition: 0.2s;
+    }
+    .security-btn i {
+      font-size: 1.1rem;
+      color: #1e4b5e;
+    }
+    .security-btn:hover:not(:disabled) {
+      background: rgba(255,255,255,0.95);
+      border-color: #a0c6d9;
+    }
+    .security-btn:disabled {
+      opacity: 0.8;
+      background: rgba(30,80,100,0.1);
+      cursor: default;
+      border-color: #b8dbe5;
+    }
+
+    #editCheckmark {
+      font-size: 1.8rem;
+      color: #1e7e34;
+      animation: pop 0.2s ease;
+    }
+    @keyframes pop { 0% { transform: scale(0.7); } 100% { transform: scale(1); } }
+
+    .hidden { display: none !important; }
+
+    /* --- Bảng nhập code --- */
+    .code-panel {
+      background: rgba(255,255,255,0.9);
+      backdrop-filter: blur(20px);
+      border-radius: 34px;
+      padding: 18px 24px;
+      margin: 8px 0 25px 0;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      flex-wrap: wrap;
+      box-shadow: 0 10px 30px -10px rgba(0,60,80,0.1);
+      border: 1px solid rgba(255,255,255,0.8);
+    }
+    .code-panel.hidden { display: none; }
+    #codeInput {
+      flex: 1 1 200px;
+      padding: 14px 22px;
+      border: none;
+      border-radius: 50px;
+      background: #f4f9fc;
+      font-size: 1rem;
+      border: 1px solid #dae9f0;
+      outline: none;
+      transition: 0.2s;
+    }
+    #codeInput:focus {
+      border-color: #3498ad;
+      background: white;
+      box-shadow: 0 0 0 3px rgba(62,162,189,0.15);
+    }
+    #submitCodeBtn {
+      background: #1d5a6d;
+      color: white;
+      border: none;
+      padding: 14px 32px;
+      border-radius: 60px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+    }
+    #submitCodeBtn:hover { background: #104857; }
+    .error { color: #c24141; font-size: 0.9rem; font-weight: 600; }
+
+    /* --- Avatar & chỉnh sửa tên + slogan --- */
+    .profile {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-bottom: 24px;
+    }
+    .avatar-container {
+      position: relative;
+      width: 148px;
+      height: 148px;
+      margin-bottom: 16px;
+    }
+    #avatar {
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 5px solid white;
+      box-shadow: 0 18px 30px -8px rgba(0,50,70,0.18);
+    }
+    .edit-avatar-btn {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      background: white;
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #1d5a6d;
+      font-size: 1.3rem;
+      box-shadow: 0 6px 16px rgba(0,30,40,0.14);
+      cursor: pointer;
+      border: 1px solid white;
+    }
+    .edit-avatar-btn:hover { background: #e3f0f5; }
+
+    .name-wrapper, .bio-wrapper {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 4px;
+    }
+    h1 {
+      font-size: 2.1rem;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+      color: #10333e;
+      margin: 0;
+    }
+    #bio {
+      font-size: 1.15rem;
+      font-weight: 400;
+      color: #3e5f6b;
+      background: rgba(255,255,255,0.5);
+      padding: 6px 24px;
+      border-radius: 80px;
+      backdrop-filter: blur(4px);
+      margin: 0;
+    }
+    .edit-name-btn, .edit-bio-btn {
+      background: transparent;
+      border: none;
+      color: #2c6979;
+      font-size: 1.2rem;
+      padding: 8px;
+      border-radius: 50%;
+      cursor: pointer;
+      transition: 0.1s;
+    }
+    .edit-name-btn:hover, .edit-bio-btn:hover {
+      background: rgba(28, 105, 122, 0.12);
+      color: #0a414f;
+    }
+
+    /* --- Khu vực các nút link --- */
+    .buttons-section {
+      margin-top: 36px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .button-item {
+      display: flex;
+      align-items: center;
+      background: rgba(255,255,255,0.7);
+      backdrop-filter: blur(8px);
+      border-radius: 100px;
+      border: 1px solid rgba(255,255,255,0.9);
+      box-shadow: 0 6px 12px rgba(0,30,40,0.04);
+    }
+    .button-item:hover {
+      background: rgba(255,255,255,0.9);
+      border-color: #bfdee7;
+    }
+    .btn-link {
+      flex: 1;
+      padding: 16px 28px;
+      text-decoration: none;
+      color: #184451;
+      font-weight: 620;
+      font-size: 1.1rem;
+      border-radius: 100px 0 0 100px;
+      letter-spacing: 0.2px;
+    }
+    /* Nút chỉnh sửa (bút) và nút xoá (trừ) */
+    .edit-btn, .delete-btn {
+      background: transparent;
+      border: none;
+      font-size: 1.3rem;
+      padding: 0 10px;
+      display: flex;
+      align-items: center;
+      cursor: pointer;
+      color: #2c6979;
+      border-left: 1px solid rgba(100, 160, 180, 0.2);
+    }
+    .edit-btn i, .delete-btn i {
+      background: white;
+      padding: 10px;
+      border-radius: 50%;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.04);
+      transition: 0.1s;
+    }
+    .edit-btn:hover i, .delete-btn:hover i {
+      background: #1d5a6d;
+      color: white;
+    }
+    .delete-btn { color: #b33a3a; }  /* dấu trừ màu đỏ nhẹ */
+    .delete-btn:hover i { background: #a13d3d; color: white; }
+
+    /* --- Nút thêm mới (dấu cộng) --- */
+    .add-button-container {
+      display: flex;
+      justify-content: center;
+      margin-top: 24px;
+    }
+    #addButton {
+      background: rgba(255,255,255,0.8);
+      border: 2px dashed #348498;
+      border-radius: 60px;
+      padding: 14px 36px;
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: #1d5a6d;
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      cursor: pointer;
+      transition: 0.2s;
+      backdrop-filter: blur(4px);
+    }
+    #addButton:hover {
+      background: rgba(29, 90, 109, 0.1);
+      border-style: solid;
+      border-color: #1d5a6d;
+    }
+
+    /* Ẩn hiện */
+    .hidden { display: none !important; }
+  </style>
+</head>
+<body>
+  <div class="glass-card">
+
+    <!-- Góc trái bên trên: nút Bảo mật + dấu tích xác nhận -->
+    <div class="top-bar">
+      <button id="securityBtn" class="security-btn">
+        <i class="fas fa-lock"></i> Bảo mật
+      </button>
+      <span id="editCheckmark" class="hidden"><i class="fas fa-check-circle"></i></span>
+    </div>
+
+    <!-- Bảng nhập mã – hiện khi bấm nút bảo mật -->
+    <div id="codePanel" class="code-panel hidden">
+      <input type="password" id="codeInput" placeholder="Nhập mã bảo mật" autocomplete="off">
+      <button id="submitCodeBtn"><i class="fas fa-key"></i> Xác nhận</button>
+      <span id="codeError" class="error"></span>
+    </div>
+
+    <!-- ========= THÔNG TIN CÁ NHÂN ========= -->
+    <div class="profile">
+      <div class="avatar-container">
+        <img id="avatar" src="https://i.pravatar.cc/300?img=7" alt="avatar">
+        <button id="editAvatarBtn" class="edit-avatar-btn hidden">
+          <i class="fas fa-pencil-alt"></i>
+        </button>
+        <input type="file" id="avatarUpload" accept="image/*" hidden>
+      </div>
+
+      <!-- Tên và nút bút chỉnh sửa tên -->
+      <div class="name-wrapper">
+        <h1 id="profileName">Lê Minh Khoa</h1>
+        <button id="editNameBtn" class="edit-name-btn hidden"><i class="fas fa-pencil-alt"></i></button>
+      </div>
+      <!-- Slogan và nút bút chỉnh sửa slogan -->
+      <div class="bio-wrapper">
+        <p id="bio"><i class="fas fa-sparkle" style="margin-right: 6px;"></i> Kỹ sư phần mềm · Sáng tạo công nghệ</p>
+        <button id="editBioBtn" class="edit-bio-btn hidden"><i class="fas fa-pencil-alt"></i></button>
+      </div>
+    </div>
+
+    <!-- ========= 5 NÚT LIÊN KẾT (ĐÃ XOÁ ICON) ========= -->
+    <div class="buttons-section" id="buttonList">
+      <!-- Nút 1 -->
+      <div class="button-item" data-index="0">
+        <a href="https://facebook.com" target="_blank" class="btn-link">Facebook</a>
+        <button class="edit-btn hidden"><i class="fas fa-pencil-alt"></i></button>
+        <button class="delete-btn hidden"><i class="fas fa-minus-circle"></i></button>
+      </div>
+      <!-- Nút 2 -->
+      <div class="button-item" data-index="1">
+        <a href="https://twitter.com" target="_blank" class="btn-link">Twitter</a>
+        <button class="edit-btn hidden"><i class="fas fa-pencil-alt"></i></button>
+        <button class="delete-btn hidden"><i class="fas fa-minus-circle"></i></button>
+      </div>
+      <!-- Nút 3 -->
+      <div class="button-item" data-index="2">
+        <a href="https://linkedin.com" target="_blank" class="btn-link">LinkedIn</a>
+        <button class="edit-btn hidden"><i class="fas fa-pencil-alt"></i></button>
+        <button class="delete-btn hidden"><i class="fas fa-minus-circle"></i></button>
+      </div>
+      <!-- Nút 4 -->
+      <div class="button-item" data-index="3">
+        <a href="https://github.com" target="_blank" class="btn-link">GitHub</a>
+        <button class="edit-btn hidden"><i class="fas fa-pencil-alt"></i></button>
+        <button class="delete-btn hidden"><i class="fas fa-minus-circle"></i></button>
+      </div>
+      <!-- Nút 5 -->
+      <div class="button-item" data-index="4">
+        <a href="#" target="_blank" class="btn-link">Portfolio</a>
+        <button class="edit-btn hidden"><i class="fas fa-pencil-alt"></i></button>
+        <button class="delete-btn hidden"><i class="fas fa-minus-circle"></i></button>
+      </div>
+    </div>
+
+    <!-- NÚT THÊM MỚI (DẤU CỘNG) – chỉ hiện khi edit mode -->
+    <div class="add-button-container hidden" id="addButtonContainer">
+      <button id="addButton"><i class="fas fa-plus-circle"></i> Thêm nút mới</button>
+    </div>
+
+    <p style="text-align: center; margin-top: 36px; color: #4e6a74; font-size: 0.9rem;">
+      <i class="fas fa-shield-alt"></i> Nhập mã <strong>1234</strong> để mở khoá chỉnh sửa
+    </p>
+  </div>
+
+  <script>
+    (function() {
+      'use strict';
+
+      // ---------- MẬT KHẨU (demo) ----------
+      const SECRET_CODE = '1234';
+      let editMode = false;
+
+      // ---------- DOM elements ----------
+      const securityBtn = document.getElementById('securityBtn');
+      const codePanel = document.getElementById('codePanel');
+      const codeInput = document.getElementById('codeInput');
+      const submitCodeBtn = document.getElementById('submitCodeBtn');
+      const codeError = document.getElementById('codeError');
+      const editCheckmark = document.getElementById('editCheckmark');
+
+      // Avatar
+      const avatarImg = document.getElementById('avatar');
+      const editAvatarBtn = document.getElementById('editAvatarBtn');
+      const avatarUpload = document.getElementById('avatarUpload');
+
+      // Tên và slogan
+      const profileName = document.getElementById('profileName');
+      const editNameBtn = document.getElementById('editNameBtn');
+      const bioEl = document.getElementById('bio');
+      const editBioBtn = document.getElementById('editBioBtn');
+
+      // Danh sách nút và các nút điều khiển
+      const buttonList = document.getElementById('buttonList');
+      const addButtonContainer = document.getElementById('addButtonContainer');
+      const addButton = document.getElementById('addButton');
+
+      // ---------- HÀM BẬT CHẾ ĐỘ CHỈNH SỬA ----------
+      function enableEditMode() {
+        if (editMode) return;
+        editMode = true;
+
+        // 1. Hiện dấu tích xác nhận bên cạnh nút bảo mật
+        editCheckmark.classList.remove('hidden');
+
+        // 2. Khoá nút bảo mật, đổi icon
+        securityBtn.innerHTML = '<i class="fas fa-unlock"></i> Đã mở khoá';
+        securityBtn.disabled = true;
+
+        // 3. Ẩn bảng nhập code (nếu đang hiện)
+        codePanel.classList.add('hidden');
+        codeError.textContent = '';
+
+        // 4. HIỆN tất cả các nút bút và nút trừ
+        //    - Bút sửa avatar
+        editAvatarBtn.classList.remove('hidden');
+        //    - Bút sửa tên, slogan
+        editNameBtn.classList.remove('hidden');
+        editBioBtn.classList.remove('hidden');
+        //    - Tất cả edit-btn, delete-btn trong .button-item
+        document.querySelectorAll('.edit-btn, .delete-btn').forEach(btn => {
+          btn.classList.remove('hidden');
+        });
+
+        // 5. Hiện nút thêm mới (dấu cộng)
+        addButtonContainer.classList.remove('hidden');
+      }
+
+      // ---------- XỬ LÝ NHẬP CODE ----------
+      function handleCodeSubmit() {
+        const entered = codeInput.value.trim();
+        if (entered === SECRET_CODE) {
+          enableEditMode();
+          codeInput.value = '';
+        } else {
+          codeError.textContent = '❌ Sai mã, thử lại!';
+          codeInput.style.borderColor = '#c24141';
+        }
+      }
+
+      // ---------- SỰ KIỆN: nút Bảo mật (hiện panel nhập code) ----------
+      securityBtn.addEventListener('click', function() {
+        if (editMode) return;
+        codePanel.classList.toggle('hidden');
+        if (!codePanel.classList.contains('hidden')) {
+          codeInput.focus();
+          codeError.textContent = '';
+          codeInput.style.borderColor = '#dae9f0';
+        }
+      });
+
+      submitCodeBtn.addEventListener('click', handleCodeSubmit);
+      codeInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') { e.preventDefault(); handleCodeSubmit(); }
+      });
+
+      // ---------- CHỈNH SỬA AVATAR ----------
+      editAvatarBtn.addEventListener('click', () => avatarUpload.click());
+      avatarUpload.addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (file) {
+          const reader = new FileReader();
+          reader.onload = ev => avatarImg.src = ev.target.result;
+          reader.readAsDataURL(file);
+        }
+        avatarUpload.value = null;
+      });
+
+      // ---------- CHỈNH SỬA TÊN & SLOGAN ----------
+      editNameBtn.addEventListener('click', function() {
+        const newName = prompt('Nhập tên mới:', profileName.textContent);
+        if (newName && newName.trim() !== '') profileName.textContent = newName.trim();
+      });
+      editBioBtn.addEventListener('click', function() {
+        // Giữ lại icon sparkle nếu muốn – nhưng chỉ sửa text
+        const currentText = bioEl.innerText.replace('✨', '').trim(); // loại bỏ icon cũ nếu có
+        const newBio = prompt('Nhập slogan mới:', currentText);
+        if (newBio && newBio.trim() !== '') {
+          bioEl.innerHTML = `<i class="fas fa-sparkle" style="margin-right: 6px;"></i> ${newBio.trim()}`;
+        }
+      });
+
+      // ---------- THÊM NÚT MỚI (DẤU CỘNG) ----------
+      addButton.addEventListener('click', function() {
+        // Tạo button-item mới
+        const newItem = document.createElement('div');
+        newItem.className = 'button-item';
+        // Đếm số lượng để gán index (không bắt buộc)
+        const index = document.querySelectorAll('.button-item').length;
+        newItem.setAttribute('data-index', index);
+
+        // Link mặc định
+        const anchor = document.createElement('a');
+        anchor.href = '#';
+        anchor.target = '_blank';
+        anchor.className = 'btn-link';
+        anchor.textContent = 'Liên kết mới';
+
+        // Nút chỉnh sửa (bút)
+        const editBtn = document.createElement('button');
+        editBtn.className = 'edit-btn';
+        editBtn.innerHTML = '<i class="fas fa-pencil-alt"></i>';
+        if (!editMode) editBtn.classList.add('hidden'); // nhưng editMode chắc chắn true lúc này
+
+        // Nút xoá (dấu trừ)
+        const deleteBtn = document.createElement('button');
+        deleteBtn.className = 'delete-btn';
+        deleteBtn.innerHTML = '<i class="fas fa-minus-circle"></i>';
+        if (!editMode) deleteBtn.classList.add('hidden');
+
+        // Ghép lại
+        newItem.appendChild(anchor);
+        newItem.appendChild(editBtn);
+        newItem.appendChild(deleteBtn);
+
+        // Thêm vào danh sách (trước nút thêm)
+        buttonList.appendChild(newItem);
+
+        // Nếu editMode đang bật, đảm bảo các nút hiện ra
+        if (editMode) {
+          editBtn.classList.remove('hidden');
+          deleteBtn.classList.remove('hidden');
+        }
+      });
+
+      // ---------- XỬ LÝ SỰ KIỆN CHO NÚT BÚT & NÚT TRỪ (DELEGATION) ----------
+      buttonList.addEventListener('click', function(e) {
+        const target = e.target.closest('button');
+        if (!target) return;
+
+        // --- CHỈNH SỬA TIÊU ĐỀ & LINK (nút bút) ---
+        if (target.classList.contains('edit-btn')) {
+          e.preventDefault();
+          const buttonItem = target.closest('.button-item');
+          if (!buttonItem) return;
+          const link = buttonItem.querySelector('.btn-link');
+          if (!link) return;
+
+          // Lấy tiêu đề hiện tại (bỏ qua icon – ở đây không còn icon)
+          let currentTitle = link.textContent.trim();
+          const newTitle = prompt('✏️ Nhập tiêu đề mới:', currentTitle);
+          if (newTitle === null || newTitle.trim() === '') return;
+
+          const currentHref = link.getAttribute('href') || '#';
+          const newUrl = prompt('🔗 Nhập đường dẫn mới:', currentHref);
+          if (newUrl === null || newUrl.trim() === '') return;
+
+          link.textContent = newTitle.trim();
+          link.setAttribute('href', newUrl.trim());
+        }
+
+        // --- XOÁ NÚT (dấu trừ) ---
+        if (target.classList.contains('delete-btn')) {
+          e.preventDefault();
+          const buttonItem = target.closest('.button-item');
+          if (buttonItem) {
+            if (confirm('Bạn có chắc muốn xoá nút này?')) {
+              buttonItem.remove();
+            }
+          }
+        }
+      });
+
+      // ---------- Ẩn tất cả nút điều khiển khi chưa edit (mặc định) ----------
+      // Mặc định trong HTML đã có class hidden, nhưng đảm bảo an toàn
+      // Không cần làm gì thêm, mọi thứ đã ẩn.
+
+      // Nếu không có edit mode, khoá không cho nhập nữa
+    })();
+  </script>
+</body>
+</html>
